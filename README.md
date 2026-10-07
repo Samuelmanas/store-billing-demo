@@ -89,10 +89,25 @@ The Version 2 UI and print layout are preserved. Added Firebase Email/Password l
 
 Create the first user in Firebase Console → Authentication → Users → Add user. Then replace the temporary Realtime Database rules with `database.rules.json`.
 
-\n## Version 4 — Sales Reports\nAdded Reports without changing Billing or Inventory. Includes daily sales, bill count, discounts, average bill, top-selling products, daily bill list, and date selection.\n
-\n## Version 5 — Backup & Export\n\nAdded a Backup section without changing Billing or Inventory. Includes:\n- Full JSON backup of settings, inventory and bills\n- Inventory CSV export\n- Sales CSV export\n\nRestore/import is intentionally not included yet; importing data will be added only after we design validation and duplicate-data protection.\n
-\n## Version 6 — Master Stock Management
 
+## Version 4 - Sales Report
+Added a dedicated Reports section without changing the existing Billing or Inventory workflows.
+Includes:
+- Daily sales reports
+- Bill count
+- Total discounts
+- Average bill value
+- Top-selling products
+- Daily bill list
+- Date-based report selection
+
+### Version 5 — Backup & Export
+Added a dedicated Backup section while keeping the existing Billing and Inventory workflows unchanged.
+
+Includes:
+- Full JSON backup of store settings, inventory, and bills
+- Inventory CSV export
+- Sales CSV export
 - Added a dedicated Master page after Inventory.
 - Inventory is view-only and shows product, packet quantity and last update.
 - All manual product and stock manipulation is done from Master.
