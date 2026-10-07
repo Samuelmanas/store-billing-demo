@@ -2,6 +2,11 @@
 
 Simple responsive billing + inventory web application.
 
+## Live Demo
+** Launch the Website - https://store-billing-demo-five.vercel.app/
+** Credentials: email - demo@gmail.com
+                password - admin@123
+
 ## Firebase
 
 This version uses Firebase Realtime Database.
