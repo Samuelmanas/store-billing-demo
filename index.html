@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#111827">
+  <title>Billing System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Billing System</h1>
+      <p>Billing & Inventory</p>
+    </div>
+    <div class="topbar-right"><div class="store-status" id="connectionStatus">Not connected</div><button id="logoutBtn" class="logout-btn hidden">Logout</button></div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-page="billing">Billing</button>
+    <button class="tab" data-page="inventory">Inventory</button>
+    <button class="tab" data-page="master">Master</button>
+    <button class="tab" data-page="history">Bill History</button>
+    <button class="tab" data-page="reports">Reports</button>
+    <button class="tab" data-page="backup">Backup</button>
+    <button class="tab" data-page="settings">Settings</button>
+  </nav>
+
+  <div id="loginScreen" class="login-screen hidden">
+    <div class="login-card">
+      <div class="login-brand">VVV Dry Fruits</div>
+      <h2>Sign in</h2>
+      <p>Sign in to access billing and inventory.</p>
+      <div class="field">
+        <label for="loginEmail">Email</label>
+        <input id="loginEmail" type="email" autocomplete="username" placeholder="store email">
+      </div>
+      <div class="field">
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="password">
+      </div>
+      <button id="loginBtn" class="primary login-btn">Sign In</button>
+      <div id="loginError" class="login-error"></div>
+    </div>
+  </div>
+
+  <main>
+    <!-- BILLING -->
+    <section id="billing" class="page active">
+      <div class="page-heading">
+        <div>
+          <h2>New Bill</h2>
+          <p>Select a product, enter the quantity to sell, and the unit is detected automatically.</p>
+        </div>
+        <span class="bill-number" id="billNumber"></span>
+      </div>
+
+      <div class="card">
+        <div class="bill-entry-grid">
+          <div class="field product-field">
+            <label>Product</label>
+            <input id="billProduct" type="text" placeholder="Type product name..." autocomplete="off">
+            <div id="billSuggestions" class="suggestions"></div>
+          </div>
+          <div class="field">
+            <label for="billQty">Quantity <span id="billQtyUnit" class="field-unit"></span></label>
+            <input id="billQty" type="number" min="0.001" step="0.001" value="1">
+          </div>
+          <div class="field">
+            <label for="billPrice" id="billPriceLabel">Price (₹)</label>
+            <input id="billPrice" type="number" min="0" step="0.01" placeholder="0.00">
+          </div>
+          <button id="addItemBtn" class="primary add-btn">Add Item</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="billItems"></tbody>
+          </table>
+          <div id="emptyBill" class="empty">No items added yet.</div>
+        </div>
+
+        <div class="bill-summary">
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <strong id="subtotal">₹0.00</strong>
+          </div>
+          <div class="discount-row">
+            <label for="discountType">Discount</label>
+            <select id="discountType">
+              <option value="amount">₹ Amount</option>
+              <option value="percent">% Percentage</option>
+            </select>
+            <input id="discountValue" type="number" min="0" step="0.01" value="0">
+          </div>
+          <div class="summary-row total-row">
+            <span>Total</span>
+            <strong id="grandTotal">₹0.00</strong>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="clearBillBtn" class="secondary">Clear</button>
+          <button id="savePrintBtn" class="primary">Save & Print Bill</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- INVENTORY -->
+    <section id="inventory" class="page">
+      <div class="page-heading">
+        <div>
+          <h2>Inventory</h2>
+          <p>View current stock and the unit used to track it. Stock is managed from Master.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="search-box">
+          <input id="inventorySearch" type="search" placeholder="Search inventory...">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Unit of Measurement</th>
+                <th>Updated</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryItems"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="reports" class="page">
+      <div class="page-heading"><div><h2>Reports</h2><p>Sales overview from saved bills.</p></div></div>
+      <div class="report-filter card">
+        <div class="field"><label for="reportDate">Date</label><input id="reportDate" type="date"></div>
+        <div class="report-actions"><button id="todayReportBtn" class="secondary">Today</button><button id="loadReportBtn" class="primary">Load Report</button></div>
+      </div>
+      <div class="report-cards">
+        <div class="report-card"><span>Total Sales</span><strong id="reportSales">₹0.00</strong></div>
+        <div class="report-card"><span>Bills</span><strong id="reportBills">0</strong></div>
+        <div class="report-card"><span>Discounts</span><strong id="reportDiscounts">₹0.00</strong></div>
+        <div class="report-card"><span>Average Bill</span><strong id="reportAverage">₹0.00</strong></div>
+      </div>
+      <div class="report-grid">
+        <div class="card"><div class="card-heading"><h3>Top-selling products</h3></div>
+          <div class="table-wrap"><table><thead><tr><th>Product</th><th>Qty Sold</th><th>Sales</th></tr></thead><tbody id="topProducts"></tbody></table><div id="noTopProducts" class="empty">No sales for this date.</div></div>
+        </div>
+        <div class="card"><div class="card-heading"><h3>Daily bills</h3></div>
+          <div class="table-wrap"><table><thead><tr><th>Bill</th><th>Time</th><th>Total</th></tr></thead><tbody id="reportBillList"></tbody></table><div id="noReportBills" class="empty">No bills for this date.</div></div>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="backup" class="page">
+      <div class="page-heading">
+        <div>
+          <h2>Backup & Export</h2>
+          <p>Download a copy of your store data for safekeeping.</p>
+        </div>
+      </div>
+
+      <div class="backup-grid">
+        <div class="card backup-card">
+          <h3>Full backup</h3>
+          <p>Downloads your store settings, inventory and bill history as one JSON file.</p>
+          <button id="downloadBackupBtn" class="primary">Download Full Backup</button>
+        </div>
+
+        <div class="card backup-card">
+          <h3>Inventory export</h3>
+          <p>Downloads the current inventory as a CSV file that can be opened in Excel.</p>
+          <button id="downloadInventoryBtn" class="secondary">Export Inventory CSV</button>
+        </div>
+
+        <div class="card backup-card">
+          <h3>Sales export</h3>
+          <p>Downloads all saved bills and their totals as a CSV file.</p>
+          <button id="downloadSalesBtn" class="secondary">Export Sales CSV</button>
+        </div>
+      </div>
+
+      <div class="card backup-warning">
+        <strong>Backup recommendation</strong>
+        <p>Keep a copy outside the store computer. A downloaded backup is useful if the computer is damaged or the account needs to be recovered.</p>
+      </div>
+    </section>
+
+
+    <!-- MASTER -->
+    <section id="master" class="page">
+      <div class="page-heading master-page-heading">
+        <div>
+          <h2>Master</h2>
+          <p>Manage products, record purchases, and review complete product information.</p>
+        </div>
+      </div>
+
+      <div class="master-subnav" role="tablist" aria-label="Master sections">
+        <button class="master-subtab active" data-master-page="overview">Master</button>
+        <button class="master-subtab" data-master-page="product">Product</button>
+        <button class="master-subtab" data-master-page="purchase">Purchase</button>
+      </div>
+
+      <!-- MASTER OVERVIEW -->
+      <section id="masterOverview" class="master-subpage active">
+        <div class="card master-overview-card">
+          <div class="master-overview-top">
+            <div>
+              <div class="eyebrow">Master catalogue</div>
+              <h3>Products</h3>
+              <p>Click a product name to open its complete stock and purchase history.</p>
+            </div>
+            <div class="search-box master-search-box">
+              <input id="masterSearch" type="search" placeholder="Search products...">
+            </div>
+          </div>
+          <div id="masterProductCards" class="master-product-list"></div>
+          <div id="noMasterItems" class="empty">No products yet.</div>
+        </div>
+      </section>
+
+      <!-- PRODUCT PAGE -->
+      <section id="masterProductPage" class="master-subpage">
+        <div class="master-form-shell">
+          <div class="master-form-intro">
+            <div class="master-icon product-icon">P</div>
+            <div>
+              <div class="eyebrow">Product setup</div>
+              <h3>Create a product</h3>
+              <p>Define the product name and the unit used to track its stock.</p>
+            </div>
+          </div>
+          <div class="master-form-body">
+            <div class="field">
+              <label for="masterProductName">Product name</label>
+              <input id="masterProductName" type="text" placeholder="e.g. Cashew" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="masterProductUnit">Unit of measurement</label>
+              <select id="masterProductUnit">
+                <option value="weight" selected>Weight (kg / gm)</option>
+                <option value="packet">Packets</option>
+              </select>
+            </div>
+            <div class="master-help">The measurement determines how stock is tracked and deducted when a bill is saved.</div>
+            <div class="actions master-actions">
+              <button id="masterProductClearBtn" class="secondary">Clear</button>
+              <button id="masterProductSaveBtn" class="primary">Create Product</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PURCHASE PAGE -->
+      <section id="masterPurchasePage" class="master-subpage">
+        <div class="master-form-shell">
+          <div class="master-form-intro">
+            <div class="master-icon purchase-icon">₹</div>
+            <div>
+              <div class="eyebrow">Purchase entry</div>
+              <h3>Record a purchase</h3>
+              <p>Every purchase is saved separately so previous prices and vendors are never lost.</p>
+            </div>
+          </div>
+          <div class="master-form-body">
+            <div class="field">
+              <label for="masterPurchaseProduct">Product</label>
+              <input id="masterPurchaseProduct" type="text" placeholder="Select a product" autocomplete="off">
+              <div id="masterPurchaseSuggestions" class="suggestions"></div>
+            </div>
+
+            <div class="master-form-grid">
+              <div class="field">
+                <label for="masterPurchaseQuantity">Quantity</label>
+                <input id="masterPurchaseQuantity" type="number" min="0.001" step="0.001" placeholder="Enter quantity">
+              </div>
+              <div class="field">
+                <label for="masterPurchaseUnitDisplay">Units of measurement</label>
+                <input id="masterPurchaseUnitDisplay" type="text" value="—" readonly aria-readonly="true">
+              </div>
+            </div>
+
+            <div class="master-form-grid">
+              <div class="field">
+                <label for="masterPurchasePrice" id="masterPurchasePriceLabel">Purchase price / packet (₹)</label>
+                <input id="masterPurchasePrice" type="number" min="0" step="0.01" placeholder="0.00">
+              </div>
+              <div class="field">
+                <label for="masterVendor">Vendor name</label>
+                <input id="masterVendor" type="text" placeholder="e.g. ABC Traders">
+              </div>
+            </div>
+
+            <div class="master-purchase-summary" id="masterPurchaseSummary">Select a product to see its purchase unit.</div>
+            <div class="master-help" id="masterPurchaseHelp">Select a product. Its unit of measurement is filled automatically, and the quantity uses that unit.</div>
+
+            <div class="actions master-actions">
+              <button id="masterPurchaseClearBtn" class="secondary">Clear</button>
+              <button id="masterPurchaseSaveBtn" class="primary">Save Purchase</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- PRODUCT DETAIL DIALOG -->
+    <div id="masterProductDialog" class="master-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="masterDialogTitle">
+      <div class="master-dialog-backdrop" data-close-master-dialog></div>
+      <div class="master-dialog-panel">
+        <div class="master-dialog-header">
+          <div>
+            <div class="eyebrow">Product details</div>
+            <h3 id="masterDialogTitle">Product</h3>
+            <p id="masterDialogUnit">—</p>
+          </div>
+          <button class="icon-close" type="button" data-close-master-dialog aria-label="Close">×</button>
+        </div>
+        <div id="masterDialogBody"></div>
+      </div>
+    </div>
+    <!-- SETTINGS -->
+    <section id="settings" class="page">
+      <div class="page-heading">
+        <div>
+          <h2>Store Settings</h2>
+          <p>These details will appear on printed bills.</p>
+        </div>
+      </div>
+
+      <div class="card settings-card">
+        <div class="field">
+          <label>Store name</label>
+          <input id="storeName" type="text" placeholder="Your store name">
+        </div>
+
+        <div class="field">
+          <label>Address</label>
+          <input id="storeAddress" type="text" placeholder="Store address">
+        </div>
+
+        <div class="field">
+          <label>Phone number</label>
+          <input id="storePhone" type="tel" placeholder="Phone number">
+        </div>
+
+        <div class="field">
+          <label>Receipt width</label>
+          <select id="receiptWidth">
+            <option value="58">58 mm</option>
+            <option value="80">80 mm</option>
+          </select>
+        </div>
+
+        <div class="actions">
+          <button id="saveSettingsBtn" class="primary">Save Settings</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section id="history" class="page">
+      <div class="page-heading">
+        <div>
+          <h2>Bill History</h2>
+          <p>View previous bills.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="search-box">
+          <input id="historySearch" type="search" placeholder="Search bill number or product...">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Bill No.</th>
+                <th>Date</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="historyItems"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Firebase compat SDK. Replace config in app.js -->
+  <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-database-compat.js"></script>
+  <script src="app.js"></script>
+  
+  <footer class="app-footer">
+    Developed by <span class="developer-name"> Samuel Manas</span>
+  </footer>
+</body>
+</html>
